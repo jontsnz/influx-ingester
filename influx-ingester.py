@@ -7,6 +7,7 @@ import argparse
 import yaml
 import time
 from datetime import datetime
+from dateutil import tz
 from abc import ABC, abstractmethod
 import json
 import paho.mqtt.client as mqtt
@@ -49,8 +50,12 @@ def convert_json_to_linedata(json_data):
     # example format: sensors,station=DummyRiverWQ RECORD=44,LoggerBattV=12.7,EXO_TempC=24.64,EXO_pH=6.73,EXO_TurbNTU=28.45,EXO_Depthm=1.558 1556896326
     station_name = json_data['Station']
     timestamp = json_data['TIMESTAMP']
-    dt = datetime.strptime(timestamp,'%Y-%m-%d %H:%M:%S.%f')
-    timestamp_nano = '{0:.0f}'.format(dt.timestamp() * 1000000)
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('AEST')
+    from_dt = datetime.strptime(timestamp,'%Y-%m-%d %H:%M:%S.%f')
+    from_dt = from_dt.replace(tzinfo=from_zone)
+    to_dt = from_dt.astimezone(to_zone)
+    timestamp_nano = '{0:.0f}'.format(to_dt.timestamp() * 1000000)
     fields = ','.join([k + '=' + str(json_data[k]) for k in json_data if k not in ['TIMESTAMP','Station']])
     line_data = 'sensors,station=%s %s %s' % (station_name, fields, timestamp_nano)
     return line_data
