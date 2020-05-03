@@ -12,4 +12,4 @@ destination:
         token: e8LDuebi8FoDpeFsNxkyTwxAcGogXns6RUKrIGPHZ7Pr4jD1rq7vm54sS1cUD9NQBhBuGRGrPrEwBIJ7ok2xfA==
         org: CCP
         bucket: water-quality
-        precision: s
+        precision: us
