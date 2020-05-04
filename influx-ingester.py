@@ -13,6 +13,8 @@ import json
 import paho.mqtt.client as mqtt
 import requests
 
+TIMING_INTERVAL = 500
+
 def setup_client(host, port, topic, userdata):
     client = mqtt.Client(userdata=userdata)
     client.on_message = on_message
@@ -24,10 +26,23 @@ def setup_client(host, port, topic, userdata):
 def on_message(client, userdata, message):
     msg = str(message.payload.decode('utf-8'))
     silent_mode = userdata['silent']
+    ingested = userdata['ingested']
     if not silent_mode:
         print('message received ' , msg)
     json_data = json.loads(msg)
-    send_data_to_influx(json_data, silent_mode, userdata['config'])
+    if send_data_to_influx(json_data, silent_mode, userdata['config']):
+        ingested += 1
+    userdata['received'] += 1
+    userdata['ingested'] = ingested
+    if silent_mode and userdata['received'] % TIMING_INTERVAL == 0:
+        now = datetime.now()
+        took_seconds = (now - userdata['last_datetime']).total_seconds()
+        ingest_per_second = TIMING_INTERVAL / took_seconds
+        userdata['last_datetime'] = now
+        print('%s Received: %d, Ingested: %d, Took: %d secs, Rate (per sec): %.2f' % (now,userdata['received'],userdata['ingested'],took_seconds,ingest_per_second))
+
+def is_successful_ingest(response):
+    return response.status_code == 204
 
 def send_data_to_influx(json_data, silent_mode, config):
     line_data = convert_json_to_linedata(json_data, config)
@@ -46,6 +61,7 @@ def send_data_to_influx(json_data, silent_mode, config):
         raise SystemExit(e)
     if not silent_mode:
         print('API response: %d %s' % (response.status_code, response.reason))
+    return is_successful_ingest(response)
 
 def convert_json_to_linedata(json_data, config):
     # example json:     {"TIMESTAMP": "2020-04-27 11:46:24.922982", "RECORD": 44, "Station": "DummyRiverWQ", "LoggerBattV": 12.7, "EXO_TempC": 24.64, "EXO_pH": 6.73, "EXO_DOPerSat": 22.05, "EXO_TurbNTU": 28.45, "EXO_Depthm": 1.558}
@@ -91,7 +107,7 @@ def main(arguments):
         port = config['source']['mqtt']['port']
         topic = config['source']['mqtt']['topic']
         print('Waiting for data from MQTT %s:%s on %s' % (host, port, topic))
-        userdata = {'config': config, 'silent': silent_mode}
+        userdata = {'config': config, 'silent': silent_mode, 'received': 0, 'ingested': 0, 'last_datetime': datetime.now()}
         mqtt_client = setup_client(host, port, topic, userdata)
     else:
         print('No MQTT source configured. Exiting.')
