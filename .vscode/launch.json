@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["-c","/Users/john/coding/sandbox/play/influx-ingester/influx-ingester-config.yaml"]
+            "args": ["-c","/Users/john/coding/sandbox/play/influx-ingester/influx-ingester-mqtt-config.yaml"]
         }
     ]
 }
