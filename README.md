@@ -18,9 +18,9 @@ docker build --pull --rm -f "Dockerfile" -t influx-ingester:latest "."
 docker run -it --name influx-ingester-mqtt --network="host" -e CONFIG_FILE="./influx-ingester-mqtt-config.yaml" influx-ingester:latest
 ```
 
-### Start the MQTT ingester and MQTT using docker compose
+### Start the MQTT ingester using docker compose
 
-Use ```docker-compose``` to start up the MQTT server and start the influx ingester.
+Use ```docker-compose``` to start up the MQTT influx ingester.
 
 ```bash
 docker-compose -f docker-compose-mqtt.yaml build
