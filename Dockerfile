@@ -1,5 +1,7 @@
 FROM python:alpine3.7
 
+ENV PYTHONUNBUFFERED 1
+
 COPY . /app
 WORKDIR /app
 

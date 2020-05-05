@@ -23,9 +23,13 @@ docker run -it --name influx-ingester-mqtt --network="host" -e CONFIG_FILE="./in
 Use ```docker-compose``` to start up the MQTT influx ingester.
 
 ```bash
-docker-compose -f docker-compose-mqtt.yaml build
+# First the dummy sensor ingester...
+docker-compose -f docker-compose-dummy-mqtt.yaml build
+docker-compose -f docker-compose-dummy-mqtt.yaml up -d
 
-docker-compose -f docker-compose-mqtt.yaml up
+# Now the Logan ingester...
+docker-compose -f docker-compose-logan-mqtt.yaml build
+docker-compose -f docker-compose-logan-mqtt.yaml up -d
 ```
 
 ### Runing the ingester manually
