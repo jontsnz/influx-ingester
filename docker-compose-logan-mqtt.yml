@@ -1,9 +1,9 @@
 version: '3.7'
 services:
-    influx-ingester:
+    influx-ingester-logan-mqtt:
         build: 
             context: .
             args:
-                config_file: './influx-ingester-logan-mqtt-config.yaml'
+                config_file: './influx-ingester-logan-mqtt-config-for-compose.yaml'
         container_name: influx-ingester-logan-mqtt
         network_mode: host
