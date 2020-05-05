@@ -1,16 +1,16 @@
 version: '3.7'
 services:
-    influx-ingester-mqtt:
+    influx-ingester-dummy-mqtt:
         build: 
             context: .
             args:
-                config_file: './mqtt-docker-compose-config.yaml'
-        container_name: influx-ingester-mqtt
+                config_file: './influx-ingester-dummy-mqtt-config-for-compose.yaml'
+        container_name: influx-ingester-dummy-mqtt
         # depends_on:
         #     - mqtt
         # network_mode: host
         networks:
-            - default
+            - dummy-network
 
     # mqtt:
     #     image: eclipse-mosquitto
@@ -24,4 +24,4 @@ services:
     #         - default
 
 networks:
-    default:
+    dummy-network:
