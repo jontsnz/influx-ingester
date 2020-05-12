@@ -2,13 +2,13 @@ source:
     timestamp_format: '%Y-%m-%d %H:%M:%S'
     timezone: 'UTC'
     mqtt:
-        hostname: 'host.docker.internal'
+        hostname: 127.0.0.1
         port: 1883
-        topic: topic/logan-sensor
+        topic: topic/cr1000-sensor
 destination:
     timezone: 'AEST'
     influxdb:
-        api_endpoint: http://host.docker.internal:9999/api/v2/write
+        api_endpoint: http://127.0.0.1:9999/api/v2/write
         token: e8LDuebi8FoDpeFsNxkyTwxAcGogXns6RUKrIGPHZ7Pr4jD1rq7vm54sS1cUD9NQBhBuGRGrPrEwBIJ7ok2xfA==
         org: CCP
         bucket: water-quality

@@ -15,7 +15,7 @@ Note that this approach relies on using the localhost network (which is running 
 ```bash
 docker build --pull --rm -f "Dockerfile" -t influx-ingester:latest "."
 
-docker run -it --name influx-ingester-mqtt --network="host" -e CONFIG_FILE="./influx-ingester-mqtt-config.yaml" influx-ingester:latest
+docker run -it --name influx-ingester-dummy-mqtt --network="host" -e CONFIG_FILE="./influx-ingester-dummy-mqtt-config.yaml" influx-ingester:latest
 ```
 
 ### Start the MQTT ingester using docker compose
@@ -27,9 +27,9 @@ Use ```docker-compose``` to start up the MQTT influx ingester.
 docker-compose -f docker-compose-dummy-mqtt.yaml build
 docker-compose -f docker-compose-dummy-mqtt.yaml up -d
 
-# Now the Logan ingester...
-docker-compose -f docker-compose-logan-mqtt.yaml build
-docker-compose -f docker-compose-logan-mqtt.yaml up -d
+# Now the CR1000 ingester...
+docker-compose -f docker-compose-cr1000-mqtt.yaml build
+docker-compose -f docker-compose-cr1000-mqtt.yaml up -d
 ```
 
 ### Runing the ingester manually

@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+    influx-ingester-cr1000-mqtt:
+        build: 
+            context: .
+            args:
+                config_file: './influx-ingester-cr1000-mqtt-config-for-compose.yaml'
+        container_name: influx-ingester-cr1000-mqtt
+        network_mode: host
