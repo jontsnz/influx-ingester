@@ -12,4 +12,8 @@ ARG config_file
 ENV CONFIG_FILE=$config_file
 RUN echo "CONFIG_FILE: $config_file"
 
-CMD ["sh", "-c", "echo $CONFIG_FILE; python influx-ingester.py -c $CONFIG_FILE --silent"]
+ARG silent_flag
+ENV SILENT_FLAG=$silent_flag
+RUN echo "SILENT_FLAG: $silent_flag"
+
+CMD ["sh", "-c", "echo $SILENT_FLAG; python influx-ingester.py -c $CONFIG_FILE $SILENT_FLAG"]

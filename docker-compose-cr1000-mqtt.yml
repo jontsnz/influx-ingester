@@ -4,6 +4,14 @@ services:
         build: 
             context: .
             args:
-                config_file: './influx-ingester-cr1000-mqtt-config-for-compose.yaml'
-        container_name: influx-ingester-cr1000-mqtt
-        network_mode: host
+                config_file: '/influx-ingester/config/cr1000-mqtt-network.yaml'
+                # silent_flag: '--silent'
+        volumes:
+            - /Users/john/coding/sandbox/iot/influx2/influx-ingester/config:/influx-ingester/config:ro
+        networks:
+            - default
+
+networks:
+    default:
+        external:
+            name: influx-test_default

@@ -1,0 +1,2 @@
+# Ignore files below when building docker container
+config

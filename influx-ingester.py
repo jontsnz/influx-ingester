@@ -12,6 +12,10 @@ from abc import ABC, abstractmethod
 import json
 import paho.mqtt.client as mqtt
 import requests
+import logging
+
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 TIMING_INTERVAL = 500
 
@@ -25,21 +29,21 @@ def setup_client(host, port, topic, userdata):
 
 def on_message(client, userdata, message):
     msg = str(message.payload.decode('utf-8'))
+    userdata['received'] += 1
     silent_mode = userdata['silent']
     ingested = userdata['ingested']
     if not silent_mode:
-        print('message received ' , msg)
+        logger.debug('Message #%d received: %s' % (userdata['received'],msg))
     json_data = json.loads(msg)
     if send_data_to_influx(json_data, silent_mode, userdata['config']):
         ingested += 1
-    userdata['received'] += 1
     userdata['ingested'] = ingested
     if silent_mode and userdata['received'] % TIMING_INTERVAL == 0:
         now = datetime.now()
         took_seconds = (now - userdata['last_datetime']).total_seconds()
         ingest_per_second = TIMING_INTERVAL / took_seconds
         userdata['last_datetime'] = now
-        print('%s Received: %d, Ingested: %d, Took: %d secs, Rate (per sec): %.2f' % (now,userdata['received'],userdata['ingested'],took_seconds,ingest_per_second))
+        logger.info('%s Received: %d, Ingested: %d, Took: %d secs, Rate (per sec): %.2f' % (now,userdata['received'],userdata['ingested'],took_seconds,ingest_per_second))
 
 def is_successful_ingest(response):
     return response.status_code == 204
@@ -54,13 +58,13 @@ def send_data_to_influx(json_data, silent_mode, config):
     url = '%s?org=%s&bucket=%s&precision=%s' % (api_url, org, bucket, precision)
     header = {"Content-Type": "application/x-www-form-urlencoded", "Authorization": "Token %s" % (token) }
     if not silent_mode:
-        print('POSTing to %s linedata %s' % (url,line_data))
+        logger.debug('POSTing to %s linedata %s' % (url,line_data))
     try:
         response = requests.post(url,data=line_data, headers=header, verify=False)
     except requests.exceptions.RequestException as e:
         raise SystemExit(e)
     if not silent_mode:
-        print('API response: %d %s' % (response.status_code, response.reason))
+        logger.debug('API response: %d %s' % (response.status_code, response.reason))
     return is_successful_ingest(response)
 
 def convert_json_to_linedata(json_data, config):
@@ -92,12 +96,14 @@ def main(arguments):
             try:
                 config = yaml.safe_load(config_file)
             except yaml.YAMLError as exc:
-                print(exc)
+                logger.exception(exc)
     else:
-        print('Config file must be provided')
+        logger.error('Config file must be provided')
+        sys.exit(1)
 
     if args.silent:
-        print('SILENT mode')
+        logger.info('SILENT mode')
+        logging.getLogger().setLevel(logging.ERROR)
         silent_mode = True
     else:
         silent_mode = False
@@ -106,15 +112,19 @@ def main(arguments):
         host = config['source']['mqtt']['hostname']
         port = config['source']['mqtt']['port']
         topic = config['source']['mqtt']['topic']
-        print('Waiting for data from MQTT %s:%s on %s' % (host, port, topic))
+        logger.info('Waiting for data from MQTT %s:%s on %s' % (host, port, topic))
         userdata = {'config': config, 'silent': silent_mode, 'received': 0, 'ingested': 0, 'last_datetime': datetime.now()}
         mqtt_client = setup_client(host, port, topic, userdata)
     else:
-        print('No MQTT source configured. Exiting.')
+        logger.info('No MQTT source configured. Exiting.')
 
     if mqtt_client:
         mqtt_client.loop_forever()
-        print('Exited MQTT listening loop')
+        logger.info('Exited MQTT listening loop')
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except Exception as exc:
+        logger.exception(exc)
+        sys.exit(1)
